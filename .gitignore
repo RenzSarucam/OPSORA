@@ -1,0 +1,28 @@
+.env
+.env.local
+.env.*.local
+
+# Backend
+backend/vendor/
+backend/node_modules/
+backend/storage/*.key
+backend/storage/logs/*
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/database/database.sqlite
+backend/public/hot
+backend/public/storage
+backend/.phpunit.result.cache
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
