@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -11,7 +12,6 @@ import {
   ScrollText,
   Settings,
   LogOut,
-  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -38,8 +38,8 @@ export function Sidebar() {
   return (
     <aside className="hidden md:flex md:w-64 md:flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
       <div className="flex h-16 items-center gap-2 px-6 border-b border-sidebar-border">
-        <Zap className="h-5 w-5 text-primary" />
-        <span className="text-lg font-semibold tracking-tight">Opsora</span>
+        <Image src="/opsora-icon.png" alt="" width={24} height={24} className="h-6 w-6" />
+        <span className="text-lg font-semibold uppercase tracking-tight">Opsora</span>
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-4">

@@ -146,3 +146,38 @@
     @apply font-sans;
   }
 }
+
+@keyframes opsora-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.08); opacity: 0.85; }
+}
+
+@keyframes opsora-ring {
+  0% { transform: scale(0.75); opacity: 0.55; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+
+@keyframes opsora-ekg-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.opsora-loading-icon {
+  animation: opsora-pulse 1.8s ease-in-out infinite;
+}
+
+.opsora-loading-ring {
+  animation: opsora-ring 1.8s ease-out infinite;
+}
+
+.opsora-loading-ekg {
+  animation: opsora-ekg-scroll 2.2s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opsora-loading-icon,
+  .opsora-loading-ring,
+  .opsora-loading-ekg {
+    animation: none;
+  }
+}

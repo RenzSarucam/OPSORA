@@ -1,7 +1,7 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Zap } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,8 +25,8 @@ export function Header() {
   return (
     <header className="flex h-16 items-center justify-between border-b border-border bg-card px-4 md:px-6">
       <div className="flex items-center gap-2 md:hidden">
-        <Zap className="h-5 w-5 text-primary" />
-        <span className="text-lg font-semibold tracking-tight">Opsora</span>
+        <Image src="/opsora-icon.png" alt="" width={24} height={24} className="h-6 w-6" />
+        <span className="text-lg font-semibold uppercase tracking-tight">Opsora</span>
       </div>
 
       <div className="hidden md:block" />

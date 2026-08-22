@@ -1,6 +1,21 @@
 import axios from "axios";
+import type { Project, ProjectInput } from "@/types/project";
+import type { DashboardStats, HealthCheckPoint, HealthSummary } from "@/types/health";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+function resolveApiUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  // Session cookies are host-scoped, so the API must be called on whatever
+  // host the browser is actually using (localhost vs a LAN IP) rather than
+  // a hardcoded value -- otherwise the XSRF cookie becomes invisible to JS.
+  if (typeof window !== "undefined") {
+    return `${window.location.protocol}//${window.location.hostname}:8000`;
+  }
+  return "http://localhost:8000";
+}
+
+const API_URL = resolveApiUrl();
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -41,4 +56,48 @@ export async function loginRequest(email: string, password: string) {
 
 export async function logoutRequest() {
   await api.post("/api/logout");
+}
+
+export async function fetchProjects(): Promise<Project[]> {
+  const { data } = await api.get<{ data: Project[] }>("/api/projects");
+  return data.data;
+}
+
+export async function fetchProject(id: number): Promise<Project> {
+  const { data } = await api.get<{ data: Project }>(`/api/projects/${id}`);
+  return data.data;
+}
+
+export async function createProject(input: ProjectInput): Promise<Project> {
+  const { data } = await api.post<{ data: Project }>("/api/projects", input);
+  return data.data;
+}
+
+export async function updateProject(id: number, input: ProjectInput): Promise<Project> {
+  const { data } = await api.put<{ data: Project }>(`/api/projects/${id}`, input);
+  return data.data;
+}
+
+export async function deleteProject(id: number): Promise<void> {
+  await api.delete(`/api/projects/${id}`);
+}
+
+export type DashboardData = {
+  stats: DashboardStats;
+  projects: Project[];
+};
+
+export async function fetchDashboard(): Promise<DashboardData> {
+  const { data } = await api.get<DashboardData>("/api/dashboard");
+  return data;
+}
+
+export async function fetchProjectHealth(id: number): Promise<HealthSummary> {
+  const { data } = await api.get<HealthSummary>(`/api/projects/${id}/health`);
+  return data;
+}
+
+export async function fetchProjectHealthHistory(id: number): Promise<HealthCheckPoint[]> {
+  const { data } = await api.get<{ data: HealthCheckPoint[] }>(`/api/projects/${id}/health-history`);
+  return data.data;
 }

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,8 +38,8 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="items-center text-center space-y-2">
           <div className="flex items-center gap-2">
-            <Zap className="h-6 w-6 text-primary" />
-            <span className="text-xl font-semibold tracking-tight">Opsora</span>
+            <Image src="/opsora-icon.png" alt="" width={32} height={32} className="h-8 w-8" />
+            <span className="text-xl font-semibold uppercase tracking-tight">Opsora</span>
           </div>
           <p className="text-sm text-muted-foreground">
             Infrastructure &amp; Application Monitoring

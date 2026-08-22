@@ -6,7 +6,7 @@ Infrastructure & Application Monitoring Platform
 
 Opsora is a self-hosted internal monitoring platform that gives an administrator one dashboard to answer: *are my applications healthy, which one is having a problem, how fast are they responding, and what's currently on fire?*
 
-> **Status:** MVP under active development. Phases 1 (Foundation) and 2 (Authentication) are implemented and verified. See [Roadmap](#roadmap) for what's next.
+> **Status:** MVP under active development. Phases 1 (Foundation), 2 (Authentication), 3 (Projects), and 4 (Monitoring) are implemented. See [Roadmap](#roadmap) for what's next.
 
 ---
 
@@ -53,8 +53,13 @@ Implemented so far:
 - [x] Protected routes (frontend guard + backend `auth:sanctum`)
 - [x] Dashboard shell with stat cards and dark Opsora branding
 - [x] Docker Compose for `frontend` + `backend` + `mysql`
+- [x] Projects CRUD (add / edit / delete / enable-disable monitoring)
+- [x] Project details page and dashboard project table with live status
+- [x] HTTP health checks (` opsora:health-check `, every-minute scheduler) with ONLINE/WARNING/OFFLINE detection
+- [x] 24-hour response-time history chart and uptime calculation per project
+- [x] Dashboard stats (online/warning/offline counts, average response time) backed by real data
 
-Planned (see [Roadmap](#roadmap)): projects CRUD, HTTP health checks, uptime/response-time history, alerts with deduplication, server metrics, container management, activity logs.
+Planned (see [Roadmap](#roadmap)): alerts with deduplication, server metrics, container management, activity logs.
 
 ## Architecture
 
@@ -202,7 +207,7 @@ cd backend
 php artisan migrate
 ```
 
-Database name is `opsora`. Tables so far: `users`, `personal_access_tokens`, `cache`, `jobs` (Laravel defaults) — `projects`, `servers`, `health_checks`, `alerts`, and `activity_logs` land in later phases per the schema in the product spec.
+Database name is `opsora`. Tables so far: `users`, `personal_access_tokens`, `cache`, `jobs` (Laravel defaults), `projects`, `health_checks` — `servers`, `alerts`, and `activity_logs` land in later phases per the schema in the product spec. `projects.server_id` is a plain nullable column for now; its foreign key constraint is added once the `servers` table exists (Phase 6).
 
 ## Seeder
 
@@ -214,11 +219,14 @@ Creates (or updates) the initial administrator from `ADMIN_NAME` / `ADMIN_EMAIL`
 
 ## Scheduler
 
-Not yet wired to a monitoring command (that lands in Phase 4 with `opsora:health-check`). Once it exists:
+Runs `opsora:health-check` every minute against all active projects (see `routes/console.php`):
 
 ```bash
 # Development
 php artisan schedule:work
+
+# Run a single check manually
+php artisan opsora:health-check
 
 # Docker: already runs inside the backend container's entrypoint
 ```
@@ -235,8 +243,16 @@ Base URL: `/api`. All authenticated routes use Sanctum session cookies (SPA auth
 | POST | `/api/login` | — (rate-limited) | Authenticate, returns the current user |
 | POST | `/api/logout` | Sanctum | Invalidate the session |
 | GET | `/api/user` | Sanctum | Current authenticated user |
+| GET | `/api/projects` | Sanctum | List all projects |
+| POST | `/api/projects` | Sanctum | Create a project |
+| GET | `/api/projects/{id}` | Sanctum | Show a project |
+| PUT | `/api/projects/{id}` | Sanctum | Update a project |
+| DELETE | `/api/projects/{id}` | Sanctum | Delete a project |
+| GET | `/api/dashboard` | Sanctum | Aggregate stats + projects with latest health |
+| GET | `/api/projects/{id}/health` | Sanctum | Latest status, uptime, avg response time |
+| GET | `/api/projects/{id}/health-history` | Sanctum | Last 24h of health checks |
 
-Remaining endpoints (`/api/dashboard`, `/api/projects`, `/api/servers`, `/api/containers`, `/api/alerts`, `/api/activity`) are specified in the product spec and land with their respective phases.
+Remaining endpoints (`/api/servers`, `/api/containers`, `/api/alerts`, `/api/activity`) are specified in the product spec and land with their respective phases.
 
 ## Production deployment
 
@@ -269,9 +285,9 @@ Remaining endpoints (`/api/dashboard`, `/api/projects`, `/api/servers`, `/api/co
 
 Building in this order (see the product spec for full phase breakdowns):
 
-- **Phase 3 — Projects:** CRUD, monitoring table, project details page
-- **Phase 4 — Monitoring:** `opsora:health-check`, scheduler, uptime, 24h chart
-- **Phase 5 — Alerts:** creation, deduplication, resolution
+- [x] **Phase 3 — Projects:** CRUD, monitoring table, project details page
+- [x] **Phase 4 — Monitoring:** `opsora:health-check`, scheduler, uptime, 24h chart
+- **Phase 5 — Alerts (next up):** creation, deduplication, resolution
 - **Phase 6 — Servers:** CRUD, metrics service
 - **Phase 7 — Containers:** listing, status, authenticated restart
 - **Phase 8 — Activity:** logging, activity page

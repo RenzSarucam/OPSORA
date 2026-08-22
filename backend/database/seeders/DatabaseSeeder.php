@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -30,6 +31,49 @@ class DatabaseSeeder extends Seeder
 
         if (! env('ADMIN_PASSWORD')) {
             $this->command->warn("ADMIN_PASSWORD was not set — generated password: {$password}");
+        }
+
+        // Demo data — placeholder URLs, not expected to resolve.
+        $demoProjects = [
+            [
+                'name' => 'ReOrderPro',
+                'description' => 'Demo project — inventory reorder platform.',
+                'environment' => 'Production',
+                'url' => 'https://reorderpro.example.com',
+                'health_check_url' => 'https://reorderpro.example.com/api/health',
+                'container_name' => 'reorderpro-app',
+            ],
+            [
+                'name' => 'E-JO',
+                'description' => 'Demo project — internal job tracker.',
+                'environment' => 'Production',
+                'url' => 'https://ejo.example.com',
+                'health_check_url' => 'https://ejo.example.com/api/health',
+                'container_name' => 'ejo-app',
+            ],
+            [
+                'name' => 'ICMS',
+                'description' => 'Demo project — content management system.',
+                'environment' => 'Production',
+                'url' => 'https://icms.example.com',
+                'health_check_url' => 'https://icms.example.com/api/health',
+                'container_name' => 'icms-app',
+            ],
+            [
+                'name' => 'Portfolio',
+                'description' => 'Demo project — public portfolio site.',
+                'environment' => 'Staging',
+                'url' => 'https://portfolio.example.com',
+                'health_check_url' => 'https://portfolio.example.com/api/health',
+                'container_name' => 'portfolio-app',
+            ],
+        ];
+
+        foreach ($demoProjects as $demoProject) {
+            Project::updateOrCreate(
+                ['name' => $demoProject['name']],
+                $demoProject
+            );
         }
     }
 }
