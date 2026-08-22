@@ -33,6 +33,13 @@ class ProjectResource extends JsonResource
                     'checked_at' => $this->latestHealthCheck->checked_at,
                 ] : null
             ),
+            'server' => $this->whenLoaded(
+                'server',
+                fn () => $this->server ? [
+                    'id' => $this->server->id,
+                    'name' => $this->server->name,
+                ] : null
+            ),
         ];
     }
 }

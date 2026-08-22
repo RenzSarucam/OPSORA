@@ -24,6 +24,7 @@ export type Project = {
   created_at: string;
   updated_at: string;
   latest_health?: LatestHealth;
+  server?: { id: number; name: string } | null;
 };
 
 export type ProjectInput = {

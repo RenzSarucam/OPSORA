@@ -11,7 +11,7 @@ class ProjectController extends Controller
 {
     public function index()
     {
-        $projects = Project::with('latestHealthCheck')->orderBy('name')->get();
+        $projects = Project::with(['latestHealthCheck', 'server'])->orderBy('name')->get();
 
         return ProjectResource::collection($projects);
     }
@@ -20,12 +20,12 @@ class ProjectController extends Controller
     {
         $project = Project::create($request->validated());
 
-        return new ProjectResource($project);
+        return new ProjectResource($project->fresh());
     }
 
     public function show(Project $project)
     {
-        $project->load('latestHealthCheck');
+        $project->load(['latestHealthCheck', 'server']);
 
         return new ProjectResource($project);
     }
@@ -33,6 +33,7 @@ class ProjectController extends Controller
     public function update(UpdateProjectRequest $request, Project $project)
     {
         $project->update($request->validated());
+        $project->load(['latestHealthCheck', 'server']);
 
         return new ProjectResource($project);
     }

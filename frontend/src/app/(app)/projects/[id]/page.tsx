@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ExternalLink, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -175,6 +176,18 @@ export default function ProjectDetailsPage() {
                 {project.health_check_url}
                 <ExternalLink className="size-3.5" />
               </a>
+            }
+          />
+          <DetailRow
+            label="Server"
+            value={
+              project.server ? (
+                <Link href="/servers" className="text-primary hover:underline">
+                  {project.server.name}
+                </Link>
+              ) : (
+                "—"
+              )
             }
           />
           <DetailRow label="Container" value={project.container_name ?? "—"} />

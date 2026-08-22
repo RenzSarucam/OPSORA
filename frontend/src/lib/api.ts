@@ -1,6 +1,8 @@
 import axios from "axios";
 import type { Project, ProjectInput } from "@/types/project";
 import type { DashboardStats, HealthCheckPoint, HealthSummary } from "@/types/health";
+import type { Alert } from "@/types/alert";
+import type { Server, ServerInput } from "@/types/server";
 
 function resolveApiUrl(): string {
   if (process.env.NEXT_PUBLIC_API_URL) {
@@ -100,4 +102,39 @@ export async function fetchProjectHealth(id: number): Promise<HealthSummary> {
 export async function fetchProjectHealthHistory(id: number): Promise<HealthCheckPoint[]> {
   const { data } = await api.get<{ data: HealthCheckPoint[] }>(`/api/projects/${id}/health-history`);
   return data.data;
+}
+
+export async function fetchAlerts(): Promise<Alert[]> {
+  const { data } = await api.get<{ data: Alert[] }>("/api/alerts");
+  return data.data;
+}
+
+export async function resolveAlert(id: number): Promise<Alert> {
+  const { data } = await api.post<{ data: Alert }>(`/api/alerts/${id}/resolve`);
+  return data.data;
+}
+
+
+export async function fetchServers(): Promise<Server[]> {
+  const { data } = await api.get<{ data: Server[] }>("/api/servers");
+  return data.data;
+}
+
+export async function fetchServer(id: number): Promise<Server> {
+  const { data } = await api.get<{ data: Server }>(`/api/servers/${id}`);
+  return data.data;
+}
+
+export async function createServer(input: ServerInput): Promise<Server> {
+  const { data } = await api.post<{ data: Server }>("/api/servers", input);
+  return data.data;
+}
+
+export async function updateServer(id: number, input: ServerInput): Promise<Server> {
+  const { data } = await api.put<{ data: Server }>(`/api/servers/${id}`, input);
+  return data.data;
+}
+
+export async function deleteServer(id: number): Promise<void> {
+  await api.delete(`/api/servers/${id}`);
 }

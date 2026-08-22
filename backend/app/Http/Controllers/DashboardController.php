@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\ProjectResource;
+use App\Models\Alert;
 use App\Models\Project;
 
 class DashboardController extends Controller
@@ -20,7 +21,7 @@ class DashboardController extends Controller
                 'online' => $statuses->filter(fn ($status) => $status === 'online')->count(),
                 'warning' => $statuses->filter(fn ($status) => $status === 'warning')->count(),
                 'offline' => $statuses->filter(fn ($status) => $status === 'offline')->count(),
-                'active_alerts' => 0,
+                'active_alerts' => Alert::where('status', 'active')->count(),
                 'average_response_time' => $responseTimes->isNotEmpty()
                     ? (int) round($responseTimes->avg())
                     : null,

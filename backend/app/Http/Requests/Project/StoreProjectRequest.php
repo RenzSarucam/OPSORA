@@ -21,7 +21,7 @@ class StoreProjectRequest extends FormRequest
             'environment' => ['required', Rule::in(Project::ENVIRONMENTS)],
             'url' => ['required', 'url', 'max:2048'],
             'health_check_url' => ['required', 'url', 'max:2048'],
-            'server_id' => ['nullable', 'integer'],
+            'server_id' => ['nullable', 'integer', 'exists:servers,id'],
             'container_name' => ['nullable', 'string', 'max:255'],
             'is_active' => ['sometimes', 'boolean'],
         ];

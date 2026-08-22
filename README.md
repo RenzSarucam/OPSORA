@@ -6,7 +6,7 @@ Infrastructure & Application Monitoring Platform
 
 Opsora is a self-hosted internal monitoring platform that gives an administrator one dashboard to answer: *are my applications healthy, which one is having a problem, how fast are they responding, and what's currently on fire?*
 
-> **Status:** MVP under active development. Phases 1 (Foundation), 2 (Authentication), 3 (Projects), and 4 (Monitoring) are implemented. See [Roadmap](#roadmap) for what's next.
+> **Status:** MVP under active development. Phases 1 (Foundation), 2 (Authentication), 3 (Projects), 4 (Monitoring), 5 (Alerts), and 6 (Servers) are implemented. See [Roadmap](#roadmap) for what's next.
 
 ---
 
@@ -58,8 +58,10 @@ Implemented so far:
 - [x] HTTP health checks (` opsora:health-check `, every-minute scheduler) with ONLINE/WARNING/OFFLINE detection
 - [x] 24-hour response-time history chart and uptime calculation per project
 - [x] Dashboard stats (online/warning/offline counts, average response time) backed by real data
+- [x] Alerts with deduplication (one active alert per project) and auto-resolve on recovery, plus manual resolve
+- [x] Servers CRUD, linkable to projects; `ServerMetricsService` adapter reports 'metrics unavailable' honestly (no agent wired up yet, no fake data)
 
-Planned (see [Roadmap](#roadmap)): alerts with deduplication, server metrics, container management, activity logs.
+Planned (see [Roadmap](#roadmap)): container management, activity logs.
 
 ## Architecture
 
@@ -207,7 +209,7 @@ cd backend
 php artisan migrate
 ```
 
-Database name is `opsora`. Tables so far: `users`, `personal_access_tokens`, `cache`, `jobs` (Laravel defaults), `projects`, `health_checks` — `servers`, `alerts`, and `activity_logs` land in later phases per the schema in the product spec. `projects.server_id` is a plain nullable column for now; its foreign key constraint is added once the `servers` table exists (Phase 6).
+Database name is `opsora`. Tables so far: `users`, `personal_access_tokens`, `cache`, `jobs` (Laravel defaults), `projects`, `health_checks`, `alerts`, `servers` — `activity_logs` lands in a later phase per the schema in the product spec. `projects.server_id` now has a real foreign key constraint onto `servers.id` (nullable, set null on delete).
 
 ## Seeder
 
@@ -251,8 +253,15 @@ Base URL: `/api`. All authenticated routes use Sanctum session cookies (SPA auth
 | GET | `/api/dashboard` | Sanctum | Aggregate stats + projects with latest health |
 | GET | `/api/projects/{id}/health` | Sanctum | Latest status, uptime, avg response time |
 | GET | `/api/projects/{id}/health-history` | Sanctum | Last 24h of health checks |
+| GET | `/api/alerts` | Sanctum | List alerts (active first, newest first) |
+| POST | `/api/alerts/{id}/resolve` | Sanctum | Manually resolve an alert |
+| GET | `/api/servers` | Sanctum | List all servers |
+| POST | `/api/servers` | Sanctum | Create a server |
+| GET | `/api/servers/{id}` | Sanctum | Show a server |
+| PUT | `/api/servers/{id}` | Sanctum | Update a server |
+| DELETE | `/api/servers/{id}` | Sanctum | Delete a server |
 
-Remaining endpoints (`/api/servers`, `/api/containers`, `/api/alerts`, `/api/activity`) are specified in the product spec and land with their respective phases.
+Remaining endpoints (`/api/containers`, `/api/activity`) are specified in the product spec and land with their respective phases.
 
 ## Production deployment
 
@@ -287,9 +296,9 @@ Building in this order (see the product spec for full phase breakdowns):
 
 - [x] **Phase 3 — Projects:** CRUD, monitoring table, project details page
 - [x] **Phase 4 — Monitoring:** `opsora:health-check`, scheduler, uptime, 24h chart
-- **Phase 5 — Alerts (next up):** creation, deduplication, resolution
-- **Phase 6 — Servers:** CRUD, metrics service
-- **Phase 7 — Containers:** listing, status, authenticated restart
+- [x] **Phase 5 — Alerts:** creation, deduplication, resolution
+- [x] **Phase 6 — Servers:** CRUD, metrics service
+- **Phase 7 — Containers (next up):** listing, status, authenticated restart
 - **Phase 8 — Activity:** logging, activity page
 - **Phase 9 — Polish:** loading/error/empty states, responsive pass, security review
 

@@ -13,6 +13,8 @@ class HealthCheckService
 
     private const WARNING_RESPONSE_TIME_MS = 1000;
 
+    public function __construct(private AlertService $alertService) {}
+
     public function check(Project $project): HealthCheck
     {
         $start = microtime(true);
@@ -31,13 +33,17 @@ class HealthCheckService
             $errorMessage = $e->getMessage();
         }
 
-        return $project->healthChecks()->create([
+        $healthCheck = $project->healthChecks()->create([
             'status' => $status,
             'http_status' => $httpStatus,
             'response_time' => $responseTime,
             'error_message' => $errorMessage,
             'checked_at' => now(),
         ]);
+
+        $this->alertService->handle($project, $healthCheck);
+
+        return $healthCheck;
     }
 
     private function determineStatus(int $httpStatus, int $responseTimeMs): string

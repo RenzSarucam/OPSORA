@@ -23,7 +23,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ENVIRONMENTS, type Project, type ProjectInput } from "@/types/project";
+import type { Server } from "@/types/server";
 import { extractErrorMessage } from "@/lib/utils";
+import { fetchServers } from "@/lib/api";
 
 const EMPTY_FORM: ProjectInput = {
   name: "",
@@ -48,6 +50,7 @@ export function ProjectFormDialog({
   onSubmit: (input: ProjectInput) => Promise<void>;
 }) {
   const [form, setForm] = useState<ProjectInput>(EMPTY_FORM);
+  const [servers, setServers] = useState<Server[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -71,6 +74,9 @@ export function ProjectFormDialog({
             }
           : EMPTY_FORM
       );
+      fetchServers()
+        .then(setServers)
+        .catch(() => setServers([]));
     }
   }
 
@@ -172,6 +178,28 @@ export function ProjectFormDialog({
                 value={form.health_check_url}
                 onChange={(e) => setForm((f) => ({ ...f, health_check_url: e.target.value }))}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="server_id">Server</Label>
+              <Select
+                value={form.server_id != null ? String(form.server_id) : "none"}
+                onValueChange={(value) =>
+                  setForm((f) => ({ ...f, server_id: value === "none" ? null : Number(value) }))
+                }
+              >
+                <SelectTrigger id="server_id" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {servers.map((server) => (
+                    <SelectItem key={server.id} value={String(server.id)}>
+                      {server.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
