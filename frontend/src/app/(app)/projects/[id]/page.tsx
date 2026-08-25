@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ExternalLink, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Pencil, RotateCw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +18,7 @@ import {
   fetchProject,
   fetchProjectHealth,
   fetchProjectHealthHistory,
+  restartContainer,
   updateProject,
 } from "@/lib/api";
 import { extractErrorMessage, formatRelativeTime, formatResponseTime } from "@/lib/utils";
@@ -36,6 +37,7 @@ export default function ProjectDetailsPage() {
   const [error, setError] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [restartOpen, setRestartOpen] = useState(false);
 
   const load = useCallback(() => {
     Promise.all([
@@ -69,6 +71,16 @@ export default function ProjectDetailsPage() {
     await deleteProject(project.id);
     toast.success(`${project.name} deleted.`);
     router.push("/projects");
+  }
+
+  async function handleRestartContainer() {
+    if (!project?.container_name) return;
+    try {
+      await restartContainer(project.container_name);
+      toast.success(`${project.container_name} restarted.`);
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Unable to restart container."));
+    }
   }
 
   if (isLoading) {
@@ -110,6 +122,12 @@ export default function ProjectDetailsPage() {
           Back to Projects
         </Button>
         <div className="flex gap-2">
+          {project.container_name && (
+            <Button variant="outline" onClick={() => setRestartOpen(true)}>
+              <RotateCw />
+              Restart Container
+            </Button>
+          )}
           <Button variant="outline" onClick={() => setFormOpen(true)}>
             <Pencil />
             Edit
@@ -225,6 +243,15 @@ export default function ProjectDetailsPage() {
         description={`Are you sure you want to delete ${project.name}? This cannot be undone.`}
         confirmLabel="Delete"
         onConfirm={handleDelete}
+      />
+
+      <ConfirmDialog
+        open={restartOpen}
+        onOpenChange={setRestartOpen}
+        title="Restart container"
+        description={`Are you sure you want to restart ${project.container_name}? It will be briefly unavailable.`}
+        confirmLabel="Restart"
+        onConfirm={handleRestartContainer}
       />
     </div>
   );

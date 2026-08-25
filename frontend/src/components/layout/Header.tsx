@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Menu } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,10 +11,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { navItems } from "@/components/layout/navItems";
 
 export function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, logout } = useAuth();
 
   async function handleLogout() {
@@ -24,7 +29,28 @@ export function Header() {
 
   return (
     <header className="flex h-16 items-center justify-between border-b border-border bg-card px-4 md:px-6">
-      <div className="flex items-center gap-2 md:hidden">
+      <div className="flex items-center gap-1 md:hidden">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button variant="ghost" size="icon-sm">
+                <Menu />
+              </Button>
+            }
+          />
+          <DropdownMenuContent align="start">
+            {navItems.map((item) => {
+              const active = pathname === item.href || pathname?.startsWith(item.href + "/");
+              const Icon = item.icon;
+              return (
+                <DropdownMenuItem key={item.href} render={<Link href={item.href} />}>
+                  <Icon className={active ? "text-primary" : undefined} />
+                  {item.label}
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Image src="/opsora-icon.png" alt="" width={24} height={24} className="h-6 w-6" />
         <span className="text-lg font-semibold uppercase tracking-tight">Opsora</span>
       </div>

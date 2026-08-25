@@ -3,6 +3,8 @@ import type { Project, ProjectInput } from "@/types/project";
 import type { DashboardStats, HealthCheckPoint, HealthSummary } from "@/types/health";
 import type { Alert } from "@/types/alert";
 import type { Server, ServerInput } from "@/types/server";
+import type { ContainersResponse } from "@/types/container";
+import type { ActivityLog } from "@/types/activity";
 
 function resolveApiUrl(): string {
   if (process.env.NEXT_PUBLIC_API_URL) {
@@ -137,4 +139,20 @@ export async function updateServer(id: number, input: ServerInput): Promise<Serv
 
 export async function deleteServer(id: number): Promise<void> {
   await api.delete(`/api/servers/${id}`);
+}
+
+
+export async function fetchContainers(): Promise<ContainersResponse> {
+  const { data } = await api.get<ContainersResponse>("/api/containers");
+  return data;
+}
+
+export async function restartContainer(id: string): Promise<void> {
+  await api.post(`/api/containers/${encodeURIComponent(id)}/restart`);
+}
+
+
+export async function fetchActivity(): Promise<ActivityLog[]> {
+  const { data } = await api.get<{ data: ActivityLog[] }>("/api/activity");
+  return data.data;
 }

@@ -3,27 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  LayoutDashboard,
-  FolderKanban,
-  Server,
-  Container,
-  BellRing,
-  ScrollText,
-  Settings,
-  LogOut,
-} from "lucide-react";
+import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/projects", label: "Projects", icon: FolderKanban },
-  { href: "/servers", label: "Servers", icon: Server },
-  { href: "/containers", label: "Containers", icon: Container },
-  { href: "/alerts", label: "Alerts", icon: BellRing },
-  { href: "/activity", label: "Activity", icon: ScrollText },
-];
+import { navItems } from "@/components/layout/navItems";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -65,13 +48,6 @@ export function Sidebar() {
       </nav>
 
       <div className="space-y-1 border-t border-sidebar-border px-3 py-4">
-        <Link
-          href="/settings"
-          className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-        >
-          <Settings className="h-4 w-4" />
-          Settings
-        </Link>
         <button
           type="button"
           onClick={handleLogout}

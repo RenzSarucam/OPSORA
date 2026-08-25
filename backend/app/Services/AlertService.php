@@ -8,6 +8,8 @@ use App\Models\Project;
 
 class AlertService
 {
+    public function __construct(private ActivityLogService $activityLogService) {}
+
     public function handle(Project $project, HealthCheck $healthCheck): void
     {
         if ($healthCheck->status === 'online') {
@@ -29,23 +31,37 @@ class AlertService
             return;
         }
 
-        Alert::create([
+        $alert = Alert::create([
             'project_id' => $project->id,
             'type' => $healthCheck->status,
             'severity' => $this->severityFor($healthCheck->status),
             'message' => $this->messageFor($project, $healthCheck),
             'status' => 'active',
         ]);
+
+        $this->activityLogService->log('alert_created', $alert->message, $project);
     }
 
     private function resolveActiveAlert(Project $project): void
     {
-        Alert::where('project_id', $project->id)
+        $activeAlert = Alert::where('project_id', $project->id)
             ->where('status', 'active')
-            ->update([
-                'status' => 'resolved',
-                'resolved_at' => now(),
-            ]);
+            ->first();
+
+        if (! $activeAlert) {
+            return;
+        }
+
+        $activeAlert->update([
+            'status' => 'resolved',
+            'resolved_at' => now(),
+        ]);
+
+        $this->activityLogService->log(
+            'alert_resolved',
+            "{$project->name} recovered — alert resolved.",
+            $project
+        );
     }
 
     private function severityFor(string $status): string

@@ -38,6 +38,10 @@ services:
         condition: service_healthy
     volumes:
       - backend_storage:/var/www/html/storage
+      # Uncomment to enable the Containers page (list/restart Docker containers).
+      # This grants the backend root-equivalent access to the host — only do this
+      # on a trusted host, never on one reachable from the internet.
+      # - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
 
   mysql:

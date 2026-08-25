@@ -6,7 +6,7 @@ Infrastructure & Application Monitoring Platform
 
 Opsora is a self-hosted internal monitoring platform that gives an administrator one dashboard to answer: *are my applications healthy, which one is having a problem, how fast are they responding, and what's currently on fire?*
 
-> **Status:** MVP under active development. Phases 1 (Foundation), 2 (Authentication), 3 (Projects), 4 (Monitoring), 5 (Alerts), and 6 (Servers) are implemented. See [Roadmap](#roadmap) for what's next.
+> **Status:** MVP complete — all 9 phases implemented (Foundation through Polish). See [Roadmap](#roadmap) for what shipped and what's intentionally out of scope for v1.
 
 ---
 
@@ -60,8 +60,10 @@ Implemented so far:
 - [x] Dashboard stats (online/warning/offline counts, average response time) backed by real data
 - [x] Alerts with deduplication (one active alert per project) and auto-resolve on recovery, plus manual resolve
 - [x] Servers CRUD, linkable to projects; `ServerMetricsService` adapter reports 'metrics unavailable' honestly (no agent wired up yet, no fake data)
+- [x] Container listing + authenticated restart via `DockerService` (shells out to the `docker` CLI; reports 'Docker not available' honestly when the host has no Docker Engine)
+- [x] Activity log — login, project CRUD/enable/disable, alert created/resolved, and container restarts are all recorded with actor + timestamp
 
-Planned (see [Roadmap](#roadmap)): container management, activity logs.
+Every feature in the product spec's MVP scope is implemented — see [Roadmap](#roadmap) for the full phase-by-phase history.
 
 ## Architecture
 
@@ -77,7 +79,7 @@ flowchart TB
     API --> DB
 ```
 
-Monitoring loop (planned, Phase 4):
+Monitoring loop:
 
 ```mermaid
 flowchart TB
@@ -209,7 +211,7 @@ cd backend
 php artisan migrate
 ```
 
-Database name is `opsora`. Tables so far: `users`, `personal_access_tokens`, `cache`, `jobs` (Laravel defaults), `projects`, `health_checks`, `alerts`, `servers` — `activity_logs` lands in a later phase per the schema in the product spec. `projects.server_id` now has a real foreign key constraint onto `servers.id` (nullable, set null on delete).
+Database name is `opsora`. Tables: `users`, `personal_access_tokens`, `cache`, `jobs` (Laravel defaults), `projects`, `health_checks`, `alerts`, `servers`, `activity_logs` — this covers every table in the product spec. `projects.server_id` has a real foreign key constraint onto `servers.id` (nullable, set null on delete); `activity_logs.user_id`/`project_id` are both nullable with set-null-on-delete so history survives a deleted user or project.
 
 ## Seeder
 
@@ -260,8 +262,11 @@ Base URL: `/api`. All authenticated routes use Sanctum session cookies (SPA auth
 | GET | `/api/servers/{id}` | Sanctum | Show a server |
 | PUT | `/api/servers/{id}` | Sanctum | Update a server |
 | DELETE | `/api/servers/{id}` | Sanctum | Delete a server |
+| GET | `/api/containers` | Sanctum | List Docker containers (live, not persisted) |
+| POST | `/api/containers/{id}/restart` | Sanctum | Restart a container |
+| GET | `/api/activity` | Sanctum | Last 100 activity log entries, newest first |
 
-Remaining endpoints (`/api/containers`, `/api/activity`) are specified in the product spec and land with their respective phases.
+Every endpoint from the product spec's API section is now implemented.
 
 ## Production deployment
 
@@ -276,9 +281,12 @@ Remaining endpoints (`/api/containers`, `/api/activity`) are specified in the pr
 - Laravel Sanctum session-cookie auth with CSRF protection; no public registration — the only account is the seeded administrator.
 - Login is rate-limited (5 attempts per email+IP with a lockout window, plus a route-level throttle).
 - CORS is restricted to `FRONTEND_URL`, not `*`, with `supports_credentials` enabled.
-- Docker Engine is never exposed to the browser — planned container actions (Phase 7) go through the Laravel backend only.
+- Docker Engine is never exposed to the browser — container listing/restart go through the Laravel backend only, which shells out to the `docker` CLI (never the raw Engine API/socket) and validates container identifiers before use.
+- Running the container feature for real requires the backend process (or its Docker Compose container) to have `docker` CLI access to the host daemon — e.g. a mounted `/var/run/docker.sock`. That grants root-equivalent host access, so only do it on a trusted host and never expose that socket to the internet.
 - Server credentials (SSH keys/passwords, API secrets) are intentionally kept out of the `servers` table by design.
 - Secrets live only in `.env` files, which are git-ignored; `.env.example` files ship with blank secrets.
+- All authenticated API routes are rate-limited (120 requests/minute) in addition to login's own stricter throttle.
+- `health_check_url` is fetched server-side on a timer by the trusted administrator's own request — this is an accepted SSRF-shaped tradeoff of the feature (the whole point is reaching arbitrary URLs the admin registers), not a bug. It's safe under this MVP's threat model (single trusted admin, no public registration) but would need allowlisting/blocking of internal address ranges before this app is ever opened up to less-trusted users.
 
 ## Troubleshooting
 
@@ -298,8 +306,8 @@ Building in this order (see the product spec for full phase breakdowns):
 - [x] **Phase 4 — Monitoring:** `opsora:health-check`, scheduler, uptime, 24h chart
 - [x] **Phase 5 — Alerts:** creation, deduplication, resolution
 - [x] **Phase 6 — Servers:** CRUD, metrics service
-- **Phase 7 — Containers (next up):** listing, status, authenticated restart
-- **Phase 8 — Activity:** logging, activity page
-- **Phase 9 — Polish:** loading/error/empty states, responsive pass, security review
+- [x] **Phase 7 — Containers:** listing, status, authenticated restart
+- [x] **Phase 8 — Activity:** logging, activity page
+- [x] **Phase 9 — Polish:** loading/error/empty states audit, mobile nav, Docker Compose wiring for the Containers feature, API rate limiting, security review
 
 Post-MVP (v1.1+): email/Discord/Telegram notifications, SSL/domain monitoring, GitHub integration, CI/CD, and — much later — Redis, queue workers, Prometheus/Grafana, multi-server monitoring, and RBAC.
