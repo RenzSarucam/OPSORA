@@ -319,6 +319,8 @@ Every endpoint from the product spec's API section is now implemented.
 
 Building in this order (see the product spec for full phase breakdowns):
 
+- [x] **Phase 1 — Foundation:** Laravel + Next.js + MySQL-ready config, Docker Compose, Sanctum, dashboard shell
+- [x] **Phase 2 — Authentication:** session-based login/logout, rate limiting, seeded admin, protected routes
 - [x] **Phase 3 — Projects:** CRUD, monitoring table, project details page
 - [x] **Phase 4 — Monitoring:** `opsora:health-check`, scheduler, uptime, 24h chart
 - [x] **Phase 5 — Alerts:** creation, deduplication, resolution
