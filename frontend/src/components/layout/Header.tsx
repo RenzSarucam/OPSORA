@@ -16,6 +16,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { navItems } from "@/components/layout/navItems";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 
 export function Header() {
   const router = useRouter();
@@ -61,6 +62,8 @@ export function Header() {
       <div className="hidden md:block" />
 
       <div className="flex items-center gap-2">
+        <NotificationBell />
+
         <Tooltip>
           <TooltipTrigger
             render={
