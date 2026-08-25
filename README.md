@@ -23,11 +23,12 @@ Opsora is a self-hosted internal monitoring platform that gives an administrator
 9. [Database setup](#database-setup)
 10. [Seeder](#seeder)
 11. [Scheduler](#scheduler)
-12. [API documentation](#api-documentation)
-13. [Production deployment](#production-deployment)
-14. [Security considerations](#security-considerations)
-15. [Troubleshooting](#troubleshooting)
-16. [Roadmap](#roadmap)
+12. [Testing](#testing)
+13. [API documentation](#api-documentation)
+14. [Production deployment](#production-deployment)
+15. [Security considerations](#security-considerations)
+16. [Troubleshooting](#troubleshooting)
+17. [Roadmap](#roadmap)
 
 ---
 
@@ -243,6 +244,15 @@ php artisan opsora:health-check
 ```
 
 No Redis, no queue worker — the scheduler alone drives the every-minute health check loop.
+
+## Testing
+
+```bash
+cd backend
+php artisan test
+```
+
+36 feature tests cover auth (login/logout/rate limiting/protected routes), project and server CRUD, health-check status detection for every threshold in the spec (2xx/3xx/5xx/slow/timeout), alert deduplication and auto-resolve-on-recovery, uptime calculation, container listing/restart (with `DockerService` mocked — no real Docker needed to run the suite), and activity logging. Tests run against an in-memory SQLite database, so they don't touch your local dev database.
 
 ## API documentation
 
