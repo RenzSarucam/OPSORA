@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { LogOut, PanelLeftClose } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { navItems } from "@/components/layout/navItems";
@@ -47,36 +47,45 @@ export function Sidebar() {
       )}
     >
       <div className="relative flex h-16 items-center justify-center border-b border-sidebar-border px-4">
-        {!collapsed && (
-          <div className="flex items-center gap-2">
-            <Image src="/opsora-icon.png" alt="" width={32} height={32} className="h-8 w-8" />
-            <span className="text-2xl font-semibold uppercase tracking-tight">Opsora</span>
-          </div>
+        {collapsed ? (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <button
+                  type="button"
+                  onClick={toggleCollapsed}
+                  aria-label="Expand sidebar"
+                  className="flex items-center justify-center rounded-md"
+                />
+              }
+            >
+              <Image src="/opsora-icon.png" alt="" width={32} height={32} className="h-8 w-8" />
+            </TooltipTrigger>
+            <TooltipContent side="right">Expand sidebar</TooltipContent>
+          </Tooltip>
+        ) : (
+          <>
+            <div className="flex items-center gap-2">
+              <Image src="/opsora-icon.png" alt="" width={32} height={32} className="h-8 w-8" />
+              <span className="text-2xl font-semibold uppercase tracking-tight">Opsora</span>
+            </div>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <button
+                    type="button"
+                    onClick={toggleCollapsed}
+                    aria-label="Collapse sidebar"
+                    className="absolute top-1/2 right-4 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  />
+                }
+              >
+                <PanelLeftClose className="h-4 w-4" />
+              </TooltipTrigger>
+              <TooltipContent side="right">Collapse sidebar</TooltipContent>
+            </Tooltip>
+          </>
         )}
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <button
-                type="button"
-                onClick={toggleCollapsed}
-                aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                className={cn(
-                  "flex h-8 w-8 items-center justify-center rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                  !collapsed && "absolute right-4"
-                )}
-              />
-            }
-          >
-            {collapsed ? (
-              <PanelLeftOpen className="h-4 w-4" />
-            ) : (
-              <PanelLeftClose className="h-4 w-4" />
-            )}
-          </TooltipTrigger>
-          <TooltipContent side="right">
-            {collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          </TooltipContent>
-        </Tooltip>
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-4">
