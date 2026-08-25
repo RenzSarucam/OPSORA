@@ -46,14 +46,9 @@ export function Sidebar() {
         collapsed ? "md:w-16" : "md:w-64"
       )}
     >
-      <div
-        className={cn(
-          "flex h-16 items-center border-b border-sidebar-border",
-          collapsed ? "justify-center px-2" : "justify-between px-4"
-        )}
-      >
+      <div className="relative flex h-16 items-center justify-center border-b border-sidebar-border px-4">
         {!collapsed && (
-          <div className="flex items-center gap-2 pl-2">
+          <div className="flex items-center gap-2">
             <Image src="/opsora-icon.png" alt="" width={24} height={24} className="h-6 w-6" />
             <span className="text-lg font-semibold uppercase tracking-tight">Opsora</span>
           </div>
@@ -65,7 +60,10 @@ export function Sidebar() {
                 type="button"
                 onClick={toggleCollapsed}
                 aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                className="flex h-8 w-8 items-center justify-center rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                className={cn(
+                  "flex h-8 w-8 items-center justify-center rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                  !collapsed && "absolute right-4"
+                )}
               />
             }
           >
