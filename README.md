@@ -162,17 +162,20 @@ From the repo root:
 
 ```bash
 cp .env.example .env
-# edit .env: set APP_KEY, DB_PASSWORD, DB_ROOT_PASSWORD, ADMIN_PASSWORD
+# edit .env: set APP_KEY, DB_PASSWORD, DB_ROOT_PASSWORD, ADMIN_PASSWORD,
+# and — for a real deploy — APP_URL / FRONTEND_URL / NEXT_PUBLIC_API_URL
 docker compose up -d --build
 ```
 
-This starts `frontend` (port 3000), `backend` (port 8000), and `mysql` (port 3306). The backend container runs migrations and starts the scheduler automatically on boot (see [`backend/docker/entrypoint.sh`](backend/docker/entrypoint.sh)).
+This starts `frontend` (port 3000), `backend` (port 8000), and `mysql` (port 3306). The backend container runs migrations, seeds the initial administrator (idempotent — safe on every restart), and starts the scheduler automatically on boot (see [`backend/docker/entrypoint.sh`](backend/docker/entrypoint.sh)).
 
 Generate an `APP_KEY` beforehand with:
 
 ```bash
 php artisan key:generate --show
 ```
+
+**Deploying somewhere other than localhost?** `NEXT_PUBLIC_API_URL` is baked into the frontend's JS bundle at *build* time (it's passed as a Docker build arg) — set it to your real public backend URL in `.env` *before* running `docker compose up --build`. Changing it later requires rebuilding the `frontend` image, not just restarting the container.
 
 ## Environment setup
 
@@ -195,12 +198,16 @@ DB_PASSWORD=
 FRONTEND_URL=http://localhost:3000
 SANCTUM_STATEFUL_DOMAINS=localhost:3000,127.0.0.1:3000
 SESSION_DOMAIN=localhost
+SESSION_SECURE_COOKIE=false   # set true once served over HTTPS
+TRUSTED_PROXIES=              # set to * behind a reverse proxy / load balancer
 
 # Initial administrator (used by the seeder — never hard-code this)
 ADMIN_NAME=Admin
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=
 ```
+
+`TRUSTED_PROXIES` matters whenever something (Nginx, Cloudflare, a PaaS load balancer) sits in front of the backend: without it, Laravel sees the proxy's IP instead of the real client's, which breaks HTTPS detection and — since login rate limiting keys off IP — means every visitor shares one rate-limit bucket.
 
 Never commit a real `.env` file — both are already git-ignored.
 
@@ -270,11 +277,11 @@ Every endpoint from the product spec's API section is now implemented.
 
 ## Production deployment
 
-1. Build and start via Docker Compose (see [Docker installation](#docker-installation)), pointing `APP_URL` / `FRONTEND_URL` at your real domains.
+1. Build and start via Docker Compose (see [Docker installation](#docker-installation)), pointing `APP_URL` / `FRONTEND_URL` / `NEXT_PUBLIC_API_URL` at your real domains **before building** — the frontend URL is baked in at build time.
 2. Set `APP_ENV=production`, `APP_DEBUG=false`.
-3. Put real, unique values in `DB_PASSWORD`, `DB_ROOT_PASSWORD`, and `ADMIN_PASSWORD` — never reuse the local dev values.
-4. Introduce Nginx only if you need TLS termination or routing beyond what the containers already expose — it isn't part of the MVP by default.
-5. Run `php artisan migrate --force` and `php artisan db:seed --force` once against the production database.
+3. Put real, unique values in `DB_PASSWORD`, `DB_ROOT_PASSWORD`, and `ADMIN_PASSWORD` — never reuse the local dev values, and never point at a database another application also owns.
+4. If you terminate TLS at a reverse proxy or load balancer (Nginx, Cloudflare, a PaaS's built-in proxy), set `TRUSTED_PROXIES=*` and `SESSION_SECURE_COOKIE=true` — otherwise skip both.
+5. Migrations and the admin seed run automatically on container boot (`backend/docker/entrypoint.sh`) — no manual step needed, and re-running them on a restart is safe (idempotent).
 
 ## Security considerations
 

@@ -52,7 +52,7 @@ class HealthCheckService
             return 'offline';
         }
 
-        if ($httpStatus >= 300 || $responseTimeMs > self::WARNING_RESPONSE_TIME_MS) {
+        if ($httpStatus < 200 || $httpStatus >= 300 || $responseTimeMs > self::WARNING_RESPONSE_TIME_MS) {
             return 'warning';
         }
 

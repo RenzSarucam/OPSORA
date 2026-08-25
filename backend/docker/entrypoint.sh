@@ -3,6 +3,7 @@ set -e
 
 php artisan config:cache
 php artisan migrate --force
+php artisan db:seed --force
 
 php artisan schedule:work &
 
