@@ -49,8 +49,8 @@ export function Sidebar() {
       <div className="relative flex h-16 items-center justify-center border-b border-sidebar-border px-4">
         {!collapsed && (
           <div className="flex items-center gap-2">
-            <Image src="/opsora-icon.png" alt="" width={24} height={24} className="h-6 w-6" />
-            <span className="text-lg font-semibold uppercase tracking-tight">Opsora</span>
+            <Image src="/opsora-icon.png" alt="" width={32} height={32} className="h-8 w-8" />
+            <span className="text-2xl font-semibold uppercase tracking-tight">Opsora</span>
           </div>
         )}
         <Tooltip>
