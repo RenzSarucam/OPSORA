@@ -7,7 +7,10 @@ import type { ContainersResponse } from "@/types/container";
 import type { ActivityLog } from "@/types/activity";
 
 function resolveApiUrl(): string {
-  if (process.env.NEXT_PUBLIC_API_URL) {
+  // Checked against undefined (not truthiness) so NEXT_PUBLIC_API_URL="" can
+  // deliberately mean "same origin" — e.g. behind the bundled nginx, which
+  // puts the frontend and /api on one origin so requests can be relative.
+  if (process.env.NEXT_PUBLIC_API_URL !== undefined) {
     return process.env.NEXT_PUBLIC_API_URL;
   }
   // Session cookies are host-scoped, so the API must be called on whatever

@@ -100,12 +100,14 @@ flowchart TB
 ```mermaid
 flowchart LR
     subgraph Opsora
-        FE[Next.js frontend :3000] --> BE[Laravel API :8000]
+        NG["nginx :8080 (optional)"] --> FE[Next.js frontend :3000]
+        NG --> BE[Laravel API :8000]
+        FE --> BE
         BE --> DB[(MySQL :3306)]
     end
 ```
 
-Nginx is intentionally left out until production routing actually requires it.
+The core is still just `frontend` + `backend` + `mysql` — `nginx` is an optional fourth service (see [Docker installation](#docker-installation)) for putting both behind one origin, e.g. behind a host-level reverse proxy that also routes other projects on the same server.
 
 ## Technology stack
 
@@ -168,7 +170,7 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-This starts `frontend` (port 3000), `backend` (port 8000), and `mysql` (port 3306). The backend container runs migrations, seeds the initial administrator (idempotent — safe on every restart), and starts the scheduler automatically on boot (see [`backend/docker/entrypoint.sh`](backend/docker/entrypoint.sh)).
+This starts `frontend` (port 3000), `backend` (port 8000), `nginx` (port 8080), and `mysql` (port 3306). The backend container runs migrations, seeds the initial administrator (idempotent — safe on every restart), and starts the scheduler automatically on boot (see [`backend/docker/entrypoint.sh`](backend/docker/entrypoint.sh)).
 
 Generate an `APP_KEY` beforehand with:
 
@@ -177,6 +179,41 @@ php artisan key:generate --show
 ```
 
 **Deploying somewhere other than localhost?** `NEXT_PUBLIC_API_URL` is baked into the frontend's JS bundle at *build* time (it's passed as a Docker build arg) — set it to your real public backend URL in `.env` *before* running `docker compose up --build`. Changing it later requires rebuilding the `frontend` image, not just restarting the container.
+
+### Putting it behind an existing nginx (shared server / multiple projects)
+
+If this isn't the only thing running on the server, you likely already have a host-level nginx routing other projects by domain — point it at the bundled `nginx` service's published port (`NGINX_PORT`, default `8080`) instead of exposing `frontend`/`backend` individually. That service ([`docker/nginx/default.conf`](docker/nginx/default.conf)) puts the frontend and `/api`/`/sanctum` on one origin, which also sidesteps CORS entirely.
+
+In `.env`:
+
+```env
+FRONTEND_URL=https://opsora.yourdomain.com
+APP_URL=https://opsora.yourdomain.com
+NEXT_PUBLIC_API_URL=          # empty — same-origin, routed through nginx
+SANCTUM_STATEFUL_DOMAINS=opsora.yourdomain.com
+TRUSTED_PROXIES=*
+SESSION_SECURE_COOKIE=true
+NGINX_PORT=8080
+```
+
+A minimal host-nginx server block proxying to it:
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name opsora.yourdomain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+`TRUSTED_PROXIES=*` matters here: without it, Laravel sees every request coming from your host nginx's IP instead of the real visitor, which breaks HTTPS detection and collapses login rate limiting onto one shared bucket (see [Environment setup](#environment-setup)).
 
 ## Environment setup
 

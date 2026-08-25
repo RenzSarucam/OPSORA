@@ -3,7 +3,10 @@ services:
     build:
       context: ./frontend
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+        # Single hyphen (not :-): NEXT_PUBLIC_API_URL="" in .env must stay
+        # empty (same-origin, for the bundled nginx setup below) rather than
+        # falling back — :- treats "set but empty" the same as "unset".
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL-http://localhost:8000}
     ports:
       - "3000:3000"
     depends_on:
@@ -44,6 +47,20 @@ services:
       # This grants the backend root-equivalent access to the host — only do this
       # on a trusted host, never on one reachable from the internet.
       # - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  # Optional: fronts frontend+backend on one port so they share an origin —
+  # useful when a host-level nginx (or any reverse proxy already routing
+  # other projects on this server) needs a single upstream to point at.
+  # Not required for local/simple use: frontend:3000 and backend:8000 above
+  # still work directly on their own.
+  nginx:
+    build: ./docker/nginx
+    ports:
+      - "${NGINX_PORT:-8080}:80"
+    depends_on:
+      - frontend
+      - backend
     restart: unless-stopped
 
   mysql:
