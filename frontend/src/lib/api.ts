@@ -16,10 +16,13 @@ function resolveApiUrl(): string {
   // Session cookies are host-scoped, so the API must be called on whatever
   // host the browser is actually using (localhost vs a LAN IP) rather than
   // a hardcoded value -- otherwise the XSRF cookie becomes invisible to JS.
+  // The port is separately overridable (NEXT_PUBLIC_API_PORT) for machines
+  // where the backend isn't on the default 8000, e.g. it's already taken.
+  const port = process.env.NEXT_PUBLIC_API_PORT ?? "8000";
   if (typeof window !== "undefined") {
-    return `${window.location.protocol}//${window.location.hostname}:8000`;
+    return `${window.location.protocol}//${window.location.hostname}:${port}`;
   }
-  return "http://localhost:8000";
+  return `http://localhost:${port}`;
 }
 
 const API_URL = resolveApiUrl();
