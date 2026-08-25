@@ -3,17 +3,21 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/useTheme";
 import { extractErrorMessage } from "@/lib/utils";
 
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +51,25 @@ export default function LoginPage() {
         aria-hidden
         className="opsora-blob-b pointer-events-none absolute -bottom-32 -right-24 h-96 w-96 rounded-full bg-success/20 blur-[120px]"
       />
+
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={toggleTheme}
+              aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              className="absolute top-4 right-4"
+            />
+          }
+        >
+          {theme === "dark" ? <Sun /> : <Moon />}
+        </TooltipTrigger>
+        <TooltipContent side="bottom">
+          {theme === "dark" ? "Light mode" : "Dark mode"}
+        </TooltipContent>
+      </Tooltip>
 
       <Card className="relative w-full max-w-sm shadow-xl shadow-primary/10">
         <CardHeader className="items-center text-center space-y-2">
