@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Menu } from "lucide-react";
+import { Menu, Moon, Sun } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   DropdownMenu,
@@ -12,13 +12,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/useTheme";
 import { navItems } from "@/components/layout/navItems";
 
 export function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   async function handleLogout() {
     await logout();
@@ -57,19 +60,39 @@ export function Header() {
 
       <div className="hidden md:block" />
 
-      <DropdownMenu>
-        <DropdownMenuTrigger className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium hover:bg-accent">
-          <Avatar className="h-7 w-7">
-            <AvatarFallback className="bg-primary/20 text-primary text-xs">
-              {initial}
-            </AvatarFallback>
-          </Avatar>
-          <span className="hidden sm:inline">{user?.name ?? "Admin"}</span>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <div className="flex items-center gap-2">
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={toggleTheme}
+                aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              />
+            }
+          >
+            {theme === "dark" ? <Sun /> : <Moon />}
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            {theme === "dark" ? "Light mode" : "Dark mode"}
+          </TooltipContent>
+        </Tooltip>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium hover:bg-accent">
+            <Avatar className="h-7 w-7">
+              <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                {initial}
+              </AvatarFallback>
+            </Avatar>
+            <span className="hidden sm:inline">{user?.name ?? "Admin"}</span>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </header>
   );
 }
