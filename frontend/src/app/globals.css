@@ -182,3 +182,28 @@
     animation: none;
   }
 }
+
+@keyframes opsora-float {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(2%, -3%); }
+}
+
+@keyframes opsora-float-reverse {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-3%, 2%); }
+}
+
+.opsora-blob-a {
+  animation: opsora-float 16s ease-in-out infinite;
+}
+
+.opsora-blob-b {
+  animation: opsora-float-reverse 20s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opsora-blob-a,
+  .opsora-blob-b {
+    animation: none;
+  }
+}

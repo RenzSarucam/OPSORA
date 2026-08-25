@@ -34,8 +34,21 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-sm">
+    <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-background p-4">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]"
+      />
+      <div
+        aria-hidden
+        className="opsora-blob-a pointer-events-none absolute -top-32 -left-24 h-96 w-96 rounded-full bg-primary/25 blur-[110px]"
+      />
+      <div
+        aria-hidden
+        className="opsora-blob-b pointer-events-none absolute -bottom-32 -right-24 h-96 w-96 rounded-full bg-success/20 blur-[120px]"
+      />
+
+      <Card className="relative w-full max-w-sm shadow-xl shadow-primary/10">
         <CardHeader className="items-center text-center space-y-2">
           <div className="flex items-center gap-2">
             <Image src="/opsora-icon.png" alt="" width={32} height={32} className="h-8 w-8" />
